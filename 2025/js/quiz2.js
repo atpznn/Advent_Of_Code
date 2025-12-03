@@ -20,19 +20,25 @@ function checkedStringWithIndex(text, index) {
   return [head, tail];
 }
 
-function isWordHasInvalidPattern(index, word) {
+function getHalf(len) {
+  return Math.floor(len / 2);
+}
+
+function isWordHasInvalidPatternV1(word) {
+  const [head, tail] = checkedStringWithIndex(word, getHalf(word.length));
+  return head == tail;
+}
+function isWordHasInvalidPatternV2(index, word) {
   if (index == word.length) return false;
   const [pattern] = checkedStringWithIndex(word, index);
-  // if (isHalfRepeatPattern(pattern, tail)) return true;
   if (isStrCompleteRepeatPattern(word, pattern)) return true;
   return isWordHasInvalidPattern(index + 1, word);
 }
 
-const isHalfRepeatPattern = (pattern, str) => str == pattern;
 const isStrCompleteRepeatPattern = (str, pattern) =>
   str.replaceAll(pattern, "") == "";
 const isLeadingWithZeroes = (text) => !text.startsWith("0");
-const onlyInvalidNumber = (num) => isWordHasInvalidPattern(0, num);
+const onlyInvalidNumber = (num) => isWordHasInvalidPatternV1(num);
 
 function getRangeNumber({ first, last }) {
   return Array.from(
@@ -63,5 +69,5 @@ const testInput = `11-22,95-115,998-1012,1188511880-1188511890,222220-222224,
 const fs = require("fs");
 const filePath = "../quiz/day_2/input.txt";
 const fileContent = fs.readFileSync(filePath, "utf-8");
-console.log(summarizeInvelidId(processTextToInvalidIds(testInput)));
+console.log(summarizeInvelidId(processTextToInvalidIds(fileContent)));
 // console.log(summarizeInvelidId(processTextToInvalidIds(fileContent)));
