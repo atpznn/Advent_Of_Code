@@ -75,7 +75,7 @@ function p(x, n) {
   if (n == 0) return 1;
   if (n == 1) return x;
   if (caches[`${x} ${n}`]) return caches[`${x} ${n}`];
-  const components = break4Number(n, 4);
+  const components = break4Number(n, getDynamicChunkSize(n));
   caches[`${x} ${components[0]}`] = p(x, components[0]);
   caches[`${x} ${components[components.length - 1]}`] = p(
     x,
@@ -106,7 +106,53 @@ function myPow1(x, n) {
   if (x < 0 && n % 2 == 0) return result;
   return n > 0 ? result : 1 / result;
 }
-console.log(myPow1(-3, -5));
+console.log(myPow1(0.2, 10));
+console.log(caches);
+function getDynamicChunkSize(totalArrayLength) {
+  // 1. Get Current Heap Metrics
+  const memory = process.memoryUsage();
+  const heapUsedBytes = memory.heapUsed;
+  const heapTotalBytes = memory.heapTotal;
+
+  // 2. Define Safety Threshold (e.g., 85% usage)
+  const SAFETY_THRESHOLD = 0.85; // 85% of the total heap
+  const maxSafeUsedBytes = heapTotalBytes * SAFETY_THRESHOLD;
+
+  // 3. Define Chunk Size Tiers
+  const LARGE_CHUNK_SIZE = 500000; // 500k: Good default for performance
+  const SMALL_CHUNK_SIZE = 50000; // 50k: Safe size when memory is tight
+  const EMERGENCY_CHUNK_SIZE = 10000; // 10k: Aggressive size to avoid OOM
+
+  let recommendedChunkSize = LARGE_CHUNK_SIZE;
+
+  // 4. Check Memory Pressure
+  if (heapUsedBytes > maxSafeUsedBytes) {
+    // We've crossed the 85% threshold. This is a red flag.
+    console.warn(
+      `⚠️ High memory usage (${((heapUsedBytes / heapTotalBytes) * 100).toFixed(
+        2
+      )}%). Reducing chunk size.`
+    );
+    recommendedChunkSize = SMALL_CHUNK_SIZE;
+
+    // You could add a more aggressive check here for *extreme* pressure:
+    // if (heapUsedBytes > heapTotalBytes * 0.95) { // 95% threshold
+    //     recommendedChunkSize = EMERGENCY_CHUNK_SIZE;
+    // }
+  } else {
+    // Memory usage is fine. Use the large, performant chunk size.
+    console.log(
+      `✅ Memory usage is fine (${(
+        (heapUsedBytes / heapTotalBytes) *
+        100
+      ).toFixed(2)}%). Using large chunk size.`
+    );
+    recommendedChunkSize = LARGE_CHUNK_SIZE;
+  }
+
+  // 5. Ensure the chunk size doesn't exceed the remaining array elements
+  return Math.min(recommendedChunkSize, totalArrayLength);
+}
 // console.log(myPow1(2, 10));/
 // console.log(caches);
 
