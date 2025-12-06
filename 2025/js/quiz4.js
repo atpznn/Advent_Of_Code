@@ -98,11 +98,6 @@ function countItemWantToRemove(state, fn) {
 const isMarkedPosition = (y) => y == "x";
 const paperHasMorethanFour = (state) => isPaperCanMove(state);
 
-function countPaperHasRemoved(state) {
-  return state.reduce((acc, x) => {
-    return x.reduce((_acc, y) => (y == "x" ? _acc + 1 : _acc), acc);
-  }, 0);
-}
 function countPaperHasMoved(state) {
   return countItemWantToRemove(state, paperHasMorethanFour);
 }

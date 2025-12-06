@@ -97,7 +97,7 @@ function tryDialingPad(symbolValues) {
     ({ foundZero, currentState }, symbolValue) => {
       const valuetoMove = dividedBy(symbolValue.value, ROTARY_DIAL_SIZE);
       const moveAction = findMoveAction(symbolValue.symbol);
-      if (!moveAction) return { foundZero, currentState };
+      if (moveAction != null) return { foundZero, currentState };
       return computeStateAndPassZero(
         symbolValue,
         { foundZero, currentState },

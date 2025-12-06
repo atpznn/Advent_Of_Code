@@ -1,84 +1,3 @@
-// function findIndexMax(str) {
-//   const maxFirstBat = Math.max(
-//     ...str
-//       .slice(0, str.length - 1)
-//       .split("")
-//       .map((x) => parseInt(x))
-//   );
-//   const findIndexMaxBat = str.split("").findIndex((x) => x == maxFirstBat);
-//   const remainBat = str.slice(findIndexMaxBat + 1, str.length);
-//   const nextCell = Math.max(...remainBat.split("").map((x) => parseInt(x)));
-//   const nextCellIndex = str.split("").findIndex((x) => x == nextCell);
-
-//   return {
-//     maxFirstBat,
-//     findIndexMaxBat,
-//     nextCellIndex,
-//     value: str[findIndexMaxBat] + str[nextCellIndex],
-//   };
-// }
-const text = `
-987654321111111
-811111111111119
-234234234234278
-818181911112111`;
-
-const fs = require("fs");
-const filePath = "../quiz/day_3/input.txt";
-const fileContent = fs.readFileSync(filePath, "utf-8");
-// console.log(
-//   fileContent
-//     .trim()
-//     .split("\n")
-//     .map((x) => x.trim())
-//     .map(findIndexMax)
-//     .reduce((x, y) => {
-//       return x + parseInt(y.value);
-//     }, 0)
-// );
-
-function v2() {
-  return text
-    .trim()
-    .split("\n")
-    .map((x) => x.trim())
-    .reduce((r, y) => {
-      const s = y.split("").map((x) => x.trim());
-      const result = s.reduce(
-        ({ pre, cell, pick, forcePick }, y, index) => {
-          if (forcePick) {
-            return {
-              pre,
-              pick: y,
-              cell: cell + y,
-              forcePick: true,
-            };
-          }
-          if (pick > y) {
-            return {
-              pick: y,
-              cell: cell + `${pick}`,
-              forcePick: s.length - index <= 12 - cell.length,
-            };
-          }
-          return {
-            pick: parseInt(y),
-            cell: cell,
-            forcePick: s.length - index <= 12 - cell.length,
-          };
-        },
-        { pre: parseInt(s[0]), pick: -1, cell: "", forcePick: false }
-      );
-      return [...r, result];
-    }, [])
-    .reduce((x, y) => {
-      console.log(y);
-      return x + parseInt(y.cell);
-    }, 0);
-}
-// const s = "".split("");
-// console.log(v2());
-
 // recursive เบือกไหม ไม่เลือก ขยับ เเล้วล่นไปเรื่อยๆ
 function findMoreThanRestInWord(current, text, index = 0) {
   if (text.length == 0) return null;
@@ -114,6 +33,16 @@ function wantToPick(len) {
     return selectiveMostWord(rest.join(""), [...collected, head]);
   };
 }
+
+const text = `
+987654321111111
+811111111111119
+234234234234278
+818181911112111`;
+
+const fs = require("fs");
+const filePath = "../quiz/day_3/input.txt";
+const fileContent = fs.readFileSync(filePath, "utf-8");
 
 console.log(
   fileContent

@@ -21,15 +21,15 @@ function findNewExceptions(intercepts, newRange) {
     (intercept) => !isThisRangeSmallOrEqualOtherRange(intercept, newRange)
   );
   return filted.flatMap((intercept) => {
-    if (isThisRangeSmallOrEqualOtherRange(newRange, intercept)) {
+    if (isThisRangeSmallOrEqualOtherRange(newRange, intercept))
       return [trimRight(intercept, newRange), trimLeft(newRange, intercept)];
-    }
-    if (isThisRangeOverlapInLeftHandSideOtherRange(intercept, newRange)) {
+
+    if (isThisRangeOverlapInLeftHandSideOtherRange(intercept, newRange))
       return [trimLeft(newRange, intercept)];
-    }
-    if (isThisRangeOverlapInRightHandSideOtherRange(intercept, newRange)) {
+
+    if (isThisRangeOverlapInRightHandSideOtherRange(intercept, newRange))
       return [trimRight(intercept, newRange)];
-    }
+
     return [];
   });
 }
@@ -77,7 +77,6 @@ function mergeRange(oldRange, newRange) {
       ...mergeToRange,
       exceptions: mergeList(mergeToRange.exceptions, [
         trimCenter(newRange, oldRange),
-        // { from: newRange.to + 1, to: oldRange.from - 1 },
       ]),
     };
 
