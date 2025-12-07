@@ -44,6 +44,7 @@ function solve(text) {
 
   const t = body.reduce(
     ({ newLines, logs, splitIndexes, countSplit }, line, index) => {
+      console.log(newLines);
       if (index % 2 != 0) {
         const foundSplit = findSplitIndexInLine(line);
         const laserIndex = toUnique(foundSplit.flatMap((x) => x.splits));
@@ -116,8 +117,8 @@ function solve(text) {
     }
   );
   console.log(t.newLines);
-  console.log(t.countSplit);
-  t.logs.map((x) => console.log(x));
+  // console.log(t.countSplit);
+  // t.logs.map((x) => console.log(x));
   return t;
   //   const index1 = findSplitIndexInLine(body[1]);
   //   const body1 = seperateLaser(index1, body[1]);
@@ -146,7 +147,8 @@ const testText = `
 ..^...^.....^..
 ...............
 .^.^.^.^.^...^.
-...............`;
+...............
+`;
 const fs = require("fs");
 const filePath = "../quiz/day_7/input.txt";
 const fileContent = fs.readFileSync(filePath, "utf-8");
@@ -208,7 +210,6 @@ startLoop: for (let y = 0; y < input.length; y++) {
   }
 }
 
-// console.log(split);
 // console.log(count(focus));
 function count(lines, index = 0) {
   if (lines.length == 0) return 1;
@@ -257,55 +258,113 @@ const logs = [
     { findIndex: 13, splits: [12, 14] },
   ],
 ];
-const t = solve(testText);
+const t = solve(fileContent);
 
-const allPosible = t.logs.reduce((state, logs) => {
-  const p = logs.reduce((state, log) => {
-    return [...state, ...log.splits.map((x) => log.findIndex + "->" + x)];
+// const allPosible = t.logs.reduce((state, logs) => {
+//   const p = logs.reduce((state, log) => {
+//     return [...state, ...log.splits.map((x) => log.findIndex + "->" + x)];
+//   }, []);
+//   const ps = toUnique(
+//     logs.reduce((state, log) => {
+//       return [...state, log.findIndex];
+//     }, [])
+//   );
+//   const parent = state.filter((x) => {
+//     const gs = x.split("->");
+//     const g = gs[gs.length - 1];
+//     return ps.some((s) => s == g);
+//   });
+
+//   // const currentState = log.splits.map((x) => log.findIndex + "->" + x);
+
+//   const j = p.reduce((state, log) => {
+//     const parents = parent.filter((x) => {
+//       const gs = x.split("->");
+//       const g = gs[gs.length - 1];
+//       const first = log.split("->")[0];
+//       return g == first;
+//     });
+//     if (parents.length == 0) {
+//       return [...state, log];
+//     }
+//     return [...state, ...parents.map((x) => x + ":" + log)];
+//   }, []);
+//   // log.findIndex;
+//   return [...j];
+// }, []);
+// console.log(allPosible.length);
+// console.log(
+//   allPosible.reduce((state, log) => {
+//     if (state.some((s) => s == log)) {
+//       return state;
+//     }
+//     return [...state, log];
+//   }, [])
+// );
+// console.table(allPosible);
+// console.table(
+//   allPosible.reduce((state, log) => {
+//     if (state.some((s) => s == log)) {
+//       return state;
+//     }
+//     return [...state, log];
+//   }, []).length
+// );
+
+function makeConnections(logs) {
+  return logs.reduce((e, s) => {
+    return [...e, s.splits.map((x) => `${s.findIndex}->${x}`)];
   }, []);
-  const ps = toUnique(
-    logs.reduce((state, log) => {
-      return [...state, log.findIndex];
-    }, [])
-  );
-  const parent = state.filter((x) => {
-    const gs = x.split("->");
-    const g = gs[gs.length - 1];
-    return ps.some((s) => s == g);
-  });
-
-  // const currentState = log.splits.map((x) => log.findIndex + "->" + x);
-
-  const j = p.reduce((state, log) => {
-    const parents = parent.filter((x) => {
-      const gs = x.split("->");
-      const g = gs[gs.length - 1];
-      const first = log.split("->")[0];
-      return g == first;
-    });
-    if (parents.length == 0) {
-      return [...state, log];
-    }
-    return [...state, ...parents.map((x) => x + ":" + log)];
+}
+function getFirst(text) {
+  return text.split("->")[0];
+}
+function getLast(text) {
+  const s = text.split("->");
+  return s[s.length - 1];
+}
+function mergeConnection(connections, logs) {
+  return connections.reduce((s, i) => {
+    const posibles = i.reduce((k, r) => {
+      const last = getLast(r);
+      const allChilds = logs.find((x) => x.findIndex == last);
+      if (!allChilds) {
+        const connectItSelf = `${last}->${last}`;
+        return [...k, `${r}:${connectItSelf}`];
+      }
+      const maped = allChilds.splits.map(
+        (f) => `${r}:${allChilds.findIndex}->${f}`
+      );
+      return [...k, ...maped];
+    }, []);
+    return [...s, ...posibles];
   }, []);
-  // log.findIndex;
-  return [...j];
+}
+
+function f(str, logs) {
+  if (logs.length == 0) return str;
+  const [head, ...r] = logs;
+  const s = mergeConnection(str, head);
+  return f([s], r);
+}
+function merging(logs, states = "") {
+  if (logs.length == 0) return states;
+  const [head, ...rest] = logs;
+  const cts = makeConnections(head);
+  return f(cts, rest);
+}
+
+console.log(t.logs.length);
+console.log(split);
+const allPos = merging(t.logs)[0];
+const filter = allPos.reduce((x, t) => {
+  if (x.includes(t)) {
+    return x;
+  }
+  return [...x, t];
 }, []);
-console.log(allPosible.length);
-console.log(
-  allPosible.reduce((state, log) => {
-    if (state.some((s) => s == log)) {
-      return state;
-    }
-    return [...state, log];
-  }, [])
-);
-console.table(allPosible);
-console.table(
-  allPosible.reduce((state, log) => {
-    if (state.some((s) => s == log)) {
-      return state;
-    }
-    return [...state, log];
-  }, [])
-);
+console.log(allPos.length);
+console.log(filter.length);
+
+// console.log(logs);
+// console.log(m(makeConnections(logs[2]), logs[3]));
