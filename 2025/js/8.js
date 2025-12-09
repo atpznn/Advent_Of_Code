@@ -117,7 +117,7 @@ const pairFilted = deduplicatePaired(sortingByDistance(paired));
 // console.log(grouping(pairFilted));
 // console.log(sortingByDistance(paired));
 
-console.log(pairFilted);
+// console.log(pairFilted);
 console.log(p(pairFilted));
 function removeThisWire(xyz, pair) {
   return { distance: 0, xyz: pair.xyz.filter((x) => x != xyz) };
@@ -125,39 +125,58 @@ function removeThisWire(xyz, pair) {
 function p(paired) {
   if (paired.length == 0) return [];
   const [head, body] = headBody(paired);
-  const [xyz1, xyz2] = head.xyz;
-  const otherPairs = body.filter((x) => isPairContain([xyz1], x.xyz));
-  const otherPairs2 = body.filter((x) => isPairContain([xyz2], x.xyz));
-  const fw = otherPairs2.filter((x) => x.distance >= head.distance);
-  const g = otherPairs.filter((x) => x.distance >= head.distance);
-  const removed = body.filter(
-    (x) => fw.some((s) => s == x) || g.some((s) => s == x)
-  );
-  const fws = fw
-    .map((x) => removeThisWire(xyz2, x))
-    .filter((x) => x.xyz != xyz2);
-  const gs = g.map((x) => removeThisWire(xyz1, x)).filter((x) => x.xyz != xyz1);
-  const m = fw.reduce((state, pair) => {
-    return mergeBox(state, pair.xyz);
-  }, head.xyz);
-  const gff = g.reduce((state, pair) => {
-    return mergeBox(state, pair.xyz);
-  }, m);
-  return [{ ...head, xyz: gff }, ...removed, ...fws, ...gs];
-  return;
-  if (otherPairs.length == 0) {
-    return [head, ...p(body)];
-  }
-  return otherPairs.reduce();
-  const newGroup = mergeBox(head.xyz, otherPair.xyz);
-  return p([
-    { ...head, xyz: newGroup },
-    ...body.filter((x) => x != otherPairs),
-  ]);
-  const removedOtherPaired = body.filter(
-    (x) => !otherPairs.some((s) => s == x)
-  );
-  const f = otherPairs.reduce((x, y) => {
-    return [...x, ...removedOtherPaired.filter((f) => isPairContain(f, y))];
-  }, []);
+  const g = head.xyz.reduce((state, xyz) => {
+    const otherPairs = body.filter(
+      (x) =>
+        isPairContain([xyz], x.xyz) &&
+        (x.distance >= head.distance || x.distance == 0)
+    );
+    const fws = otherPairs
+      .map((x) => removeThisWire(xyz, x))
+      .filter((x) => x.xyz != xyz);
+    const removed = body.filter((x) => {
+      return !(
+        fws.some((s) => isPairContain(s.xyz, x.xyz))
+        // gs.some((s) => isPairContain(s.xyz, x.xyz))
+      );
+    });
+    const m = fws.reduce((state, pair) => {
+      return mergeBox(state, [xyz, ...pair.xyz]);
+    }, head.xyz);
+
+    return [...state, { ...head, xyz: m }, ...p([...removed, ...fws])];
+    // });
+    // const otherPairs = body.filter(
+    //   (x) =>
+    //     isPairContain([xyz1], x.xyz) &&
+    //     (x.distance >= head.distance || x.distance == 0)
+    // );
+    // const otherPairs2 = body.filter(
+    //   (x) =>
+    //     isPairContain([xyz2], x.xyz) &&
+    //     (x.distance >= head.distance || x.distance == 0)
+    // );
+    // const fws = otherPairs2
+    //   .map((x) => removeThisWire(xyz2, x))
+    //   .filter((x) => x.xyz != xyz2);
+    // const gs = otherPairs
+    //   .map((x) => removeThisWire(xyz1, x))
+    //   .filter((x) => x.xyz != xyz1);
+    // 4; // v wrong
+    // const removed = body.filter((x) => {
+    //   return !(
+    //     fws.some((s) => isPairContain(s.xyz, x.xyz)) ||
+    //     gs.some((s) => isPairContain(s.xyz, x.xyz))
+    //   );
+    // });
+
+    // const m = fws.reduce((state, pair) => {
+    //   return mergeBox(state, [xyz2, ...pair.xyz]);
+    // }, head.xyz);
+    // const gff = gs.reduce((state, pair) => {
+    //   return mergeBox(state, [xyz1, ...pair.xyz]);
+    // }, m);
+    // return [{ ...head, xyz: gff }, ...p([...removed, ...fws, ...gs])];
+  });
+  return g;
 }
