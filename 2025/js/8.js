@@ -114,11 +114,32 @@ const fileContent = fs.readFileSync(filePath, "utf-8");
 const waired = splitText(testText);
 const paired = getPairs(waired);
 const pairFilted = deduplicatePaired(sortingByDistance(paired));
+function h(waired, paired) {
+  const [head, body] = headBody(waired);
+  const g = paired.filter((x) => isPairContain(x.xyz, [head]));
+  const p = removeThisWire(head, g[0]).xyz[0];
+  const gg = paired.filter(
+    (x) =>
+      isPairContain(x.xyz, [p]) &&
+      g.some((s) => s == x) &&
+      x.distance < p.distance
+  );
+
+  if (!gg) {
+    const connected = [head, ...removeThisWire(head, g[0]).xyz];
+    return;
+  }
+  // const remove
+  return h(body);
+  console.log(gg);
+}
 // console.log(grouping(pairFilted));
 // console.log(sortingByDistance(paired));
 
 // console.log(pairFilted);
-console.log(p(pairFilted));
+// console.log(pairFilted);
+// console.log(paired);
+console.log(h(waired, pairFilted));
 function removeThisWire(xyz, pair) {
   return { distance: 0, xyz: pair.xyz.filter((x) => x != xyz) };
 }
